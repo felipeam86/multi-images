@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "multi-image"
+version = "0.1.0"
+description = ""
+authors = ["Felipe Aguirre Martinez <felipe@prediktia.ai>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+cachesql = "^0.3.0"
+python-dotenv = "^1.0.1"
+marimo = "^0.4.0"
+pandas = "^2.2.2"
+psycopg2-binary = "^2.9.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
