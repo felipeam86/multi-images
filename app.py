@@ -53,7 +53,7 @@ def __(df, mo, product_filter, ui):
 
 @app.cell
 def __(mo):
-    mo.md('# Graphic')
+    mo.md("# Graphic")
     return
 
 
@@ -145,32 +145,34 @@ def __(mo, product_filter):
 
 @app.cell
 def __(images_products, product_filter):
-    images_products[images_products['product'] == product_filter.value]
+    images_products[images_products["product"] == product_filter.value]
     return
 
 
 @app.cell
 def __(match_product, mo):
-    mo.md(f'# Images of the match product {match_product.value}')
+    mo.md(f"# Images of the match product {match_product.value}")
     return
 
 
 @app.cell
 def __(images_products, match_product):
-    images_products[images_products['product'] == match_product.value]
+    images_products[images_products["product"] == match_product.value]
     return
 
 
 @app.cell
 def __(match_product, mo):
-    mo.md(f'# Images without located objects of the match product {match_product.value}')
+    mo.md(
+        f"# Images without located objects of the match product {match_product.value}"
+    )
     return
 
 
 @app.cell
 def __(data, match_product):
     located_objects = data.get_images_without_located_objects()
-    located_objects[located_objects['product'] == match_product.value]
+    located_objects[located_objects["product"] == match_product.value]
     return located_objects,
 
 
@@ -188,13 +190,13 @@ def __(match_product, mo):
 @app.cell
 def __(data, match_product):
     main_objects = data.get_images_without_main_object()
-    main_objects[main_objects['product'] == match_product.value]
+    main_objects[main_objects["product"] == match_product.value]
     return main_objects,
 
 
 @app.cell
 def __(match_product, mo):
-    mo.md(f'# Matches of the match product {match_product.value}')
+    mo.md(f"# Matches of the match product {match_product.value}")
     return
 
 
@@ -207,7 +209,10 @@ def __(data):
 
 @app.cell
 def __(match_product, matches, product_filter):
-    matches[(matches['search_product']==product_filter.value) & (matches['match_product']==match_product.value)]
+    matches[
+        (matches["search_product"] == product_filter.value)
+        & (matches["match_product"] == match_product.value)
+    ]
     return
 
 
