@@ -73,10 +73,10 @@ def __(df_product):
     )
     df_ = df_product_top_n.pivot(
         index=[
+            "search_image_type",
+            "search_angle",
             "search_product",
             "search_thumb",
-            "search_angle",
-            "search_image_type",
         ],
         columns="match_product",
         values=["match_thumb", "image_score"],
@@ -91,7 +91,7 @@ def __(df_, mo, n, product_filter):
 
 
     _header = (
-        f"| angle | image_type | {product_filter.value} |"
+        f"| image_type | angle | {product_filter.value} |"
         + "|".join(df_.columns.levels[1])
         + "|\n"
         + "|---" * (n + 3)
@@ -102,7 +102,7 @@ def __(df_, mo, n, product_filter):
 
     for i, row in df_.iterrows():
         thumbs = (
-            f"| {i[2]}| {i[3]}| {make_html_thumb(i[1])} |"
+            f"| {i[0]}| {i[1]}| {make_html_thumb(i[3])} |"
             + "|".join(
                 row.loc["match_thumb"]
                 .fillna("")
@@ -112,7 +112,7 @@ def __(df_, mo, n, product_filter):
             + "|\n"
         )
         scores = (
-            f"| {i[2]}| {i[3]}|  |"
+            f"| {i[0]}| {i[1]}|  |"
             + "|".join(row.loc["image_score"].map(lambda s: f"{s:0.2%}"))
             + "|---" * (n + 3)
             + "|\n"
