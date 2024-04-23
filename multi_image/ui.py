@@ -11,6 +11,12 @@ def get_product_filter(df):
     )
 
 
+def get_match_product(df):
+    return mo.ui.dropdown(
+        options=df.columns.levels[1].to_list(),
+    )
+
+
 def make_thumbnail_row(df_product_angle, n=10):
     return mo.md(
         "|"

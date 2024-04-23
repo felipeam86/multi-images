@@ -38,3 +38,21 @@ def get_image_matches() -> pd.DataFrame:
         .query("search_product != match_product")
     )
     return df
+
+
+def get_images_without_located_objects() -> pd.DataFrame:
+    query = Path(QUERIES_FOLDER / "get_images_without_located_objects.sql").read_text()
+    df = db_dwh.query(query)
+    return df
+
+
+def get_images_without_main_object() -> pd.DataFrame:
+    query = Path(QUERIES_FOLDER / "get_images_without_main_object.sql").read_text()
+    df = db_dwh.query(query)
+    return df
+
+
+def get_products_with_their_images() -> pd.DataFrame:
+    query = Path(QUERIES_FOLDER / "get_products_with_their_images.sql").read_text()
+    df = db_dwh.query(query)
+    return df
