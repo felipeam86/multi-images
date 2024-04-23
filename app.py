@@ -222,5 +222,54 @@ def __():
     return
 
 
+@app.cell
+def __():
+    return
+
+
+@app.cell
+def __(data):
+    import pandas as pd
+
+    df_embeddings = data.get_image_embeddings()
+
+    df_embeddings_search = (
+        df_embeddings.query("group == 'search'")
+        .set_index("image_id")
+        .rename_axis(index="search_image_id")
+        .embedding.apply(pd.Series)
+    )
+    df_embeddings_match = (
+        df_embeddings.query("group == 'match'")
+        .set_index("image_id")
+        .rename_axis(index="match_image_id")
+        .embedding.apply(pd.Series)
+    )
+    return df_embeddings, df_embeddings_match, df_embeddings_search, pd
+
+
+@app.cell
+def __(df_embeddings_match, df_embeddings_search, pd):
+    from sklearn.metrics.pairwise import cosine_similarity
+
+    df_sim = pd.DataFrame(
+        data=cosine_similarity(df_embeddings_search, df_embeddings_match),
+        index=df_embeddings_search.index,
+        columns=df_embeddings_match.index,
+    )
+    return cosine_similarity, df_sim
+
+
+@app.cell
+def __(df_sim):
+    df_sim
+    return
+
+
+@app.cell
+def __():
+    return
+
+
 if __name__ == "__main__":
     app.run()
