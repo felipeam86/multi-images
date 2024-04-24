@@ -217,13 +217,8 @@ def __(match_product, matches, product_filter):
 
 
 @app.cell
-def __():
-    # matches[(matches['search_image_id']==115345) & (matches['match_image_id']==115361)]
-    return
-
-
-@app.cell
-def __():
+def __(mo):
+    mo.md("# Cosine similarity")
     return
 
 
@@ -267,7 +262,200 @@ def __(df_sim):
 
 
 @app.cell
-def __():
+def __(df_embeddings, df_sim, ui):
+    df_melted_sim = df_sim.assign(search_image_id=df_sim.index).melt(
+        id_vars="search_image_id",
+        var_name="match_image_id",
+        value_name="image_score",
+    )
+
+    df_search_data = df_embeddings.query("group=='search'")[
+        ["product", "image_id", "image_url", "angle", "image_type"]
+    ].rename(
+        columns={
+            "product": "search_product",
+            "image_id": "search_image_id",
+            "image_url": "search_image_url",
+            "angle": "search_angle",
+            "image_type": "search_image_type",
+        }
+    )
+
+    df_match_data = df_embeddings.query("group=='match'")[
+        ["product", "image_id", "image_url", "angle", "image_type"]
+    ].rename(
+        columns={
+            "product": "match_product",
+            "image_id": "match_image_id",
+            "image_url": "match_image_url",
+            "angle": "match_angle",
+            "image_type": "match_image_type",
+        }
+    )
+
+    df_merged = (
+        df_melted_sim.merge(df_search_data, on="search_image_id")
+        .merge(df_match_data, on="match_image_id")
+        .sort_values(
+            ["search_product", "image_score"],
+            ascending=False,
+        )
+        .query(
+            "(search_angle == match_angle) and (search_image_type == match_image_type)"
+        )
+    )
+
+    df_merged = df_merged[
+        [
+            "search_image_id",
+            "search_product",
+            "match_image_id",
+            "match_product",
+            "search_image_url",
+            "match_image_url",
+            "search_angle",
+            "match_angle",
+            "search_image_type",
+            "match_image_type",
+            "image_score",
+        ]
+    ]
+
+    cosine_product_filter = ui.get_product_filter(df_merged)
+    return (
+        cosine_product_filter,
+        df_match_data,
+        df_melted_sim,
+        df_merged,
+        df_search_data,
+    )
+
+
+@app.cell
+def __(cosine_product_filter):
+    cosine_product_filter
+    return
+
+
+@app.cell
+def __(cosine_product_filter, df_merged, mo):
+    mo.stop(
+        cosine_product_filter.value is None,
+        mo.md("# Choose a product"),
+    )
+    cosine_df_product = df_merged.query(f"search_product == '{cosine_product_filter.value}'")
+    return cosine_df_product,
+
+
+@app.cell
+def __(cosine_df_product, n):
+    cosine_top_n_products = (
+        cosine_df_product.groupby("match_product")
+        .image_score.max()
+        .sort_values(ascending=False)[:n]
+        .index
+    )
+    cosine_df_product_top_n = cosine_df_product[
+        cosine_df_product.match_product.isin(cosine_top_n_products)
+    ].query(
+        "(search_angle == match_angle) and (search_image_type == match_image_type)"
+    )
+    cosine_df_ = cosine_df_product_top_n.pivot(
+        index=[
+            "search_image_type",
+            "search_angle",
+            "search_product",
+            "search_image_url",
+        ],
+        columns="match_product",
+        values=["match_image_url", "image_score"],
+    )
+    return cosine_df_, cosine_df_product_top_n, cosine_top_n_products
+
+
+@app.cell
+def __(cosine_df_, cosine_product_filter, make_html_thumb, mo, n):
+    _cosine_header = (
+        f"| image_type | angle | {cosine_product_filter.value} |"
+        + "|".join(cosine_df_.columns.levels[1])
+        + "|\n"
+        + "|---" * (n + 3)
+        + "|\n"
+    )
+
+    _cosine_table = _cosine_header
+
+    for j, row2 in cosine_df_.iterrows():
+        cosine_thumbs = (
+            f"| {j[0]}| {j[1]}| {make_html_thumb(j[3])} |"
+            + "|".join(
+                row2.loc["match_image_url"]
+                .fillna("")
+                .map(lambda t: f"""<img src="{t}" width="200"/>""")
+            )
+            + "|---" * (n + 3)
+            + "|\n"
+        )
+        cosine_scores = (
+            f"| {j[0]}| {j[1]}|  |"
+            + "|".join(row2.loc["image_score"].map(lambda s: f"{s:0.2%}"))
+            + "|---" * (n + 3)
+            + "|\n"
+        )
+        _cosine_table += cosine_scores
+        _cosine_table += cosine_thumbs
+
+    mo.md(_cosine_table)
+    return cosine_scores, cosine_thumbs, j, row2
+
+
+@app.cell
+def __(cosine_df_, ui):
+    cosine_match_product = ui.get_match_product(cosine_df_)
+    cosine_match_product
+    return cosine_match_product,
+
+
+@app.cell
+def __(match_product, mo):
+    mo.md(f"# Images of the match product {match_product.value}")
+    return
+
+
+@app.cell
+def __(cosine_match_product, images_products):
+    images_products[images_products["product"] == cosine_match_product.value]
+    return
+
+
+@app.cell
+def __(match_product, mo):
+    mo.md(
+        f"# Images without located objects of the match product {match_product.value}"
+    )
+    return
+
+
+@app.cell
+def __(cosine_match_product, located_objects):
+    located_objects[located_objects["product"] == cosine_match_product.value]
+    return
+
+
+@app.cell
+def __(match_product, mo):
+    mo.md(
+        f"""
+        # Images without main object of the match product {match_product.value}.\n
+        These images are not inside the product set
+        """
+    )
+    return
+
+
+@app.cell
+def __(cosine_match_product, main_objects):
+    main_objects[main_objects["product"] == cosine_match_product.value]
     return
 
 

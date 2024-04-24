@@ -22,11 +22,14 @@ with last_sale as (
 select
 	ls.product,
 	ri.image_id,
+	replace(ri.image_uri, 'gs://', 'https://storage.googleapis.com/') as image_url,
+	ri.angle,
+	gt.name as image_type,
+	ie.embedding,
 	case
 		when ls.first_sale >= '2023-06-01' then 'search'
 		else 'match'
-	end as group,
-	ie.embedding
+	end as group
 from
 	last_sale as ls
 inner join
@@ -37,3 +40,6 @@ inner join
 	datascience.image_embeddings ie 
 	on
 	ie.image_id = ri.image_id
+inner join prediktia.global_types as gt on ri.image_type = gt.type_id
+order by
+    ls.product, ri.image_id
