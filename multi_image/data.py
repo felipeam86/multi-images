@@ -62,3 +62,8 @@ def get_image_embeddings() -> pd.DataFrame:
     query = Path(QUERIES_FOLDER / "get_image_embeddings.sql").read_text()
     df = db_dwh.query(query)
     return df
+
+
+def get_families() -> pd.DataFrame:
+    df = pd.read_csv(Path(QUERIES_FOLDER / "get_families.csv"), dtype={'product': str})
+    return df
