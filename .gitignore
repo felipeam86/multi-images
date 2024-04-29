@@ -4,3 +4,4 @@ logs
 poetry.lock
 __pycache__
 .cache
+downloads/
